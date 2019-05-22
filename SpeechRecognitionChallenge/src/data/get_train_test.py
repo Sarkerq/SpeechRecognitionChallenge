@@ -5,7 +5,7 @@ import pandas as pd
 import re
 import hashlib
 from sklearn.preprocessing import StandardScaler
-
+import librosa    
 import os
 from pathlib import Path
 import IPython.display as ipd
@@ -16,7 +16,7 @@ import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.io import wavfile
-
+from time import clock
 """Determines which data partition the file should belong to.
 
 We want to keep files in the same training, validation, or testing sets even if new ones are added over time. This makes it less likely that testing samples will accidentally be reused in training when long runs are restarted for example. To keep this stability, a hash of the filename is taken and used to determine which set it should belong to. This determination only depends on the name and the set proportions, so it won't change as other files are added.
@@ -63,6 +63,8 @@ def log_specgram(audio, sample_rate, window_size=20,
     return freqs, times, np.log(spec.T.astype(np.float32) + eps)
 
 def get_train_test(train_audio_path):
+    start = clock() 
+
     train_labels = os.listdir(train_audio_path)
     train_labels.remove('_background_noise_')
 
@@ -90,17 +92,25 @@ def get_train_test(train_audio_path):
     val_perc = 10
     raw_train = []
     raw_dev = []
-    for row in train.itertuples():
+    i = 0
+    for row in train[::12].itertuples():
+        i += 1
         folder = row[1]
         file = row[2]
         label = row[3]
         filename = folder + "/" + file
         which = which_set(f"{train_audio_path}/{filename}",val_perc,test_perc)
-        sample_rate, samples = wavfile.read(train_audio_path + filename)
+        samples, sample_rate = librosa.load(train_audio_path + filename, sr=8000)
+        if len(samples) != 8000 : 
+            continue
         std_samples = StandardScaler().fit_transform(samples.astype('float64').reshape(-1, 1)).reshape(-1,)
         freqs, times, spectrogram = log_specgram(std_samples, sample_rate)
         if which == 'training':
             raw_train.append((spectrogram, label))
         else:
             raw_dev.append((spectrogram,label))
+        if i % 1000 == 0:
+            print(f"{i} : {clock() - start} s")
+        # if i == 5000:
+        #     break    
     return raw_train, raw_dev
