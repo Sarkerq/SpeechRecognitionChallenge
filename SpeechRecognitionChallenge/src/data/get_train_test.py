@@ -62,7 +62,7 @@ def log_specgram(audio, sample_rate, window_size=20,
                                     detrend=False)
     return freqs, times, np.log(spec.T.astype(np.float32) + eps)
 
-def get_train_test(train_audio_path):
+def get_train_test(train_audio_path, val_perc, portion):
     start = clock() 
 
     train_labels = os.listdir(train_audio_path)
@@ -89,20 +89,19 @@ def get_train_test(train_audio_path):
     train['file'] = train.apply(lambda x: remove_label_from_file(*x), axis=1)
     train['label'] = train['folder'].apply(lambda x: x if x in labels_to_keep else 'unknown')
     test_perc = 0
-    val_perc = 10
     raw_train = []
     raw_dev = []
     i = 0
-    for row in train[::12].itertuples():
+    for row in train[::portion].itertuples():
         i += 1
         folder = row[1]
         file = row[2]
         label = row[3]
         filename = folder + "/" + file
         which = which_set(f"{train_audio_path}/{filename}",val_perc,test_perc)
-        samples, sample_rate = librosa.load(train_audio_path + filename, sr=8000)
-        if len(samples) != 8000 : 
-            continue
+        sample_rate, samples = wavfile.read(train_audio_path + filename)
+        #if len(samples) != 8000 : 
+        #    continue
         std_samples = StandardScaler().fit_transform(samples.astype('float64').reshape(-1, 1)).reshape(-1,)
         freqs, times, spectrogram = log_specgram(std_samples, sample_rate)
         if which == 'training':
@@ -114,3 +113,38 @@ def get_train_test(train_audio_path):
         # if i == 5000:
         #     break    
     return raw_train, raw_dev
+
+
+
+
+def get_test(test_audio_path, portion, part):
+    start = clock() 
+
+    train_file_labels =  os.listdir(test_audio_path)
+
+    train = pd.DataFrame({'file':train_file_labels})
+    train = train.reset_index(drop=False)
+    train = train[['file']]
+    train = train.sort_values('file')
+    train = train.reset_index(drop=True)
+    test_perc = 0
+    raw_train = []
+    i = 0
+    length = train.shape[0]
+    start_index = int((length * part) / portion)
+    end_index = int((length * (part + 1)) / portion)
+
+    for row in train[start_index:end_index].itertuples():
+        i += 1
+        filename = row[1]
+        sample_rate, samples = wavfile.read(test_audio_path + filename)
+        #if len(samples) != 8000 : 
+        #    continue
+        std_samples = StandardScaler().fit_transform(samples.astype('float64').reshape(-1, 1)).reshape(-1,)
+        freqs, times, spectrogram = log_specgram(std_samples, sample_rate)
+        raw_train.append( (filename,spectrogram) )
+        if i % 1000 == 0:
+            print(f"{i} : {clock() - start} s")
+        # if i == 5000:
+        #     break    
+    return raw_train
