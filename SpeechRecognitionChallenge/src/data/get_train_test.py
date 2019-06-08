@@ -102,7 +102,9 @@ def get_train_test(train_audio_path, val_perc, portion):
         filename = folder + "/" + file
         which = which_set(f"{train_audio_path}/{filename}",val_perc,test_perc)
         sample_rate, samples = wavfile.read(train_audio_path + filename)
-        output_data_simple = samplerate.resample(samples, sample_rate/8000, 'sinc_best')
+
+        if sample_rate != 8000:
+            samples = samplerate.resample(samples, sample_rate/8000, 'sinc_best')
         #if len(samples) != 8000 : 
         #    continue
         std_samples = StandardScaler().fit_transform(samples.astype('float64').reshape(-1, 1)).reshape(-1,)
