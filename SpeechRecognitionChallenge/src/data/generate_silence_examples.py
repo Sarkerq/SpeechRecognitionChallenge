@@ -30,7 +30,7 @@ def save_silence_samples_from_columbia(path):
 
 
 def divide_wavs(source_path, dest_path, seg_len_mils=1000):
-    print('version 0.0.0.4beta')
+    print('version 0.0.0.5beta')
     wav_files = [f for f in listdir(source_path) if isfile(join(source_path, f)) and re.search('.wav',f)]
     for wav_f in wav_files:
         wav_audio = AudioSegment.from_wav(join(source_path,wav_f))
@@ -48,7 +48,7 @@ def resample_rate(source_path, dest_path):
 
     for wav_f in wav_files:
         wav_audio = AudioSegment.from_wav(join(source_path, wav_f))
-        wav_audio.set_frame_rate(16000)
+        wav_audio.set_frame_rate(8000)
         wav_audio.export(join(dest_path, wav_f), format='wav')
 
         
