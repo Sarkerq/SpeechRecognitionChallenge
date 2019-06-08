@@ -35,6 +35,8 @@ def divide_wavs(source_path, dest_path, seg_len_mils=1000):
         for i in range(0, len(wav_audio), seg_len_mils):
             t1 = i
             t2 = i + seg_len_mils
+            if t2 > len(wav_audio):
+                break
             segment = wav_audio[t1:t2]
             segment.export(join(dest_path, f'{abs(hash(wav_f))}_no_hash_{int(i/1000)}.wav'), format="wav")
 
