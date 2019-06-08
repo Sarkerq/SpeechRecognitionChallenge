@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.io import wavfile
 from time import clock
+import samplerate
+
 """Determines which data partition the file should belong to.
 
 We want to keep files in the same training, validation, or testing sets even if new ones are added over time. This makes it less likely that testing samples will accidentally be reused in training when long runs are restarted for example. To keep this stability, a hash of the filename is taken and used to determine which set it should belong to. This determination only depends on the name and the set proportions, so it won't change as other files are added.
@@ -100,6 +102,7 @@ def get_train_test(train_audio_path, val_perc, portion):
         filename = folder + "/" + file
         which = which_set(f"{train_audio_path}/{filename}",val_perc,test_perc)
         sample_rate, samples = wavfile.read(train_audio_path + filename)
+        output_data_simple = samplerate.resample(samples, sample_rate/8000, 'sinc_best')
         #if len(samples) != 8000 : 
         #    continue
         std_samples = StandardScaler().fit_transform(samples.astype('float64').reshape(-1, 1)).reshape(-1,)
