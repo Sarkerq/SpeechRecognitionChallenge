@@ -25,11 +25,12 @@ def save_silence_samples_from_columbia(path):
     for sample_name in combine_noise_samples:
         if re.search( '.*.mp3', sample_name):
             sound = AudioSegment.from_mp3(dist_file_path)
+            sound.set_frame_rate(8000)
             sound.export(join(path, f"{sample_name.replace('mp3', 'wav')}"), format="wav")
 
 
 def divide_wavs(source_path, dest_path, seg_len_mils=1000):
-    print('version 0.0.0.2beta')
+    print('version 0.0.0.3beta')
     wav_files = [f for f in listdir(source_path) if isfile(join(source_path, f)) and re.search('.wav',f)]
     for wav_f in wav_files:
         wav_audio = AudioSegment.from_wav(join(source_path,wav_f))
@@ -41,6 +42,19 @@ def divide_wavs(source_path, dest_path, seg_len_mils=1000):
             segment = wav_audio[t1:t2]
             segment.export(join(dest_path, f'{abs(hash(wav_f))}_no_hash_{int(i/1000)}.wav'), format="wav")
 
+
+def resample_rate(source_path, dest_path):
+    wav_files = [f for f in listdir(source_path) if isfile(join(source_path, f)) and re.search('.wav',f)]
+
+    for wav_f in wav_files:
+        wav_audio = AudioSegment.from_wav(join(source_path, wav_f))
+        wav_audio.set_frame_rate(16000)
+        wav_audio.export(join(dest_path, wav_f), format='wav')
+
+        
+
+
 if __name__ == '__main__':
-    save_silence_samples_from_columbia('../../train/audio/_background_noise_')
-    divide_wavs('../../train/audio/_background_noise_', '../../train/audio/silence')
+    #save_silence_samples_from_columbia('../../train/audio/_background_noise_')
+    #divide_wavs('../../train/audio/_background_noise_', '../../train/audio/silence')
+    resample_rate('../../train/audio/_background_noise_', '../../train/audio/_background_noise_resampled_')
