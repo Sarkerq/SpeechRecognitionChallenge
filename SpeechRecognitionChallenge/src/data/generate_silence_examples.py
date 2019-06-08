@@ -49,6 +49,7 @@ def resample_rate(source_path, dest_path):
     for wav_f in wav_files:
         wav_audio = AudioSegment.from_wav(join(source_path, wav_f))
         wav_audio = wav_audio.set_frame_rate(16000)
+        wav_audio = wav_audio.set_channels(1)
         wav_audio.export(join(dest_path, wav_f), format='wav')
 
         
