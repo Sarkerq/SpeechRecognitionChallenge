@@ -30,7 +30,7 @@ def save_silence_samples_from_columbia(path):
 
 
 def divide_wavs(source_path, dest_path, seg_len_mils=1000):
-    print('version 0.0.0.3beta')
+    print('version 0.0.0.4beta')
     wav_files = [f for f in listdir(source_path) if isfile(join(source_path, f)) and re.search('.wav',f)]
     for wav_f in wav_files:
         wav_audio = AudioSegment.from_wav(join(source_path,wav_f))

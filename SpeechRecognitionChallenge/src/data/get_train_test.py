@@ -65,6 +65,7 @@ def log_specgram(audio, sample_rate, window_size=20,
     return freqs, times, np.log(spec.T.astype(np.float32) + eps)
 
 def get_train_test(train_audio_path, val_perc, portion):
+    print('version 0.0.0.4beta')
     start = clock() 
 
     train_labels = os.listdir(train_audio_path)
@@ -102,7 +103,7 @@ def get_train_test(train_audio_path, val_perc, portion):
         filename = folder + "/" + file
         which = which_set(f"{train_audio_path}/{filename}",val_perc,test_perc)
         sample_rate, samples = wavfile.read(train_audio_path + filename)
-        
+
         std_samples = StandardScaler().fit_transform(samples.astype('float64').reshape(-1, 1)).reshape(-1,)
         freqs, times, spectrogram = log_specgram(std_samples, sample_rate)
         if which == 'training':
