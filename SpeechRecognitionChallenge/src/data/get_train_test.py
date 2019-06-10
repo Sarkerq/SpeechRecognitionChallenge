@@ -112,8 +112,6 @@ def get_train_test(train_audio_path, val_perc, portion):
             raw_dev.append((spectrogram,label))
         if i % 1000 == 0:
             print(f"{i} : {clock() - start} s")
-        # if i == 5000:
-        #     break    
     return raw_train, raw_dev
 
 
